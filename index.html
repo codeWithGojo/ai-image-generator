@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Afri Index — Flier Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  :root{
+    --bg-deep:#0B0B0E;
+    --bg-panel:#141417;
+    --bg-field:#1D1D22;
+    --lime:#D6FF3F;
+    --lime-dim:#a8cc2f;
+    --coral:#FF5A3C;
+    --text-hi:#F5F5F0;
+    --text-mid:#B7B7BE;
+    --text-low:#6E6E76;
+    --line:#2A2A30;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg-deep);color:var(--text-hi);font-family:'Inter',sans-serif;}
+  .app{display:grid;grid-template-columns:380px 1fr;min-height:100vh;}
+  @media (max-width:900px){ .app{grid-template-columns:1fr;} }
+
+  /* ---------- CONTROL PANEL ---------- */
+  .panel{background:var(--bg-panel);padding:28px 24px;border-right:1px solid var(--line);overflow-y:auto;}
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:26px;}
+  .brand .mark{width:34px;height:34px;background:var(--lime);border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Archivo Black',sans-serif;color:#0B0B0E;font-size:16px;}
+  .brand .word{font-family:'Archivo Black',sans-serif;font-size:15px;letter-spacing:0.5px;}
+  .brand .word span{color:var(--lime);}
+
+  .tabs{display:flex;gap:6px;margin-bottom:22px;background:var(--bg-field);padding:4px;border-radius:10px;}
+  .tab{flex:1;text-align:center;padding:9px 4px;font-size:12px;font-weight:700;letter-spacing:.3px;color:var(--text-mid);border-radius:7px;cursor:pointer;user-select:none;transition:.15s;}
+  .tab.active{background:var(--lime);color:#0B0B0E;}
+
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-low);margin-bottom:6px;}
+  .field input, .field select{width:100%;background:var(--bg-field);border:1px solid var(--line);color:var(--text-hi);padding:10px 12px;border-radius:8px;font-family:'Inter',sans-serif;font-size:13.5px;}
+  .field input:focus, .field select:focus{outline:none;border-color:var(--lime);}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+  .section-title{font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--lime);margin:22px 0 12px;padding-top:16px;border-top:1px solid var(--line);}
+  .section-title:first-of-type{border-top:none;padding-top:0;margin-top:0;}
+
+  .aspect-row{display:flex;gap:8px;margin-bottom:18px;}
+  .aspect-btn{flex:1;padding:9px 4px;border-radius:8px;border:1px solid var(--line);background:var(--bg-field);color:var(--text-mid);font-size:12px;font-weight:600;cursor:pointer;text-align:center;}
+  .aspect-btn.active{border-color:var(--lime);color:var(--lime);}
+
+  .download-btn{width:100%;padding:14px;background:var(--lime);color:#0B0B0E;border:none;border-radius:10px;font-family:'Archivo Black',sans-serif;font-size:13px;letter-spacing:.4px;cursor:pointer;margin-top:8px;transition:.15s;}
+  .download-btn:hover{background:var(--lime-dim);}
+  .hint{font-size:11.5px;color:var(--text-low);margin-top:10px;line-height:1.5;}
+
+  /* ---------- PREVIEW STAGE ---------- */
+  .stage{display:flex;align-items:center;justify-content:center;padding:40px 20px;background:
+    radial-gradient(circle at 30% 20%, #17171c 0%, var(--bg-deep) 60%);}
+
+  .card{position:relative;background:#0B0B0E;overflow:hidden;font-family:'Inter',sans-serif;color:var(--text-hi);
+    box-shadow:0 30px 70px rgba(0,0,0,.55);}
+  .card.square{width:520px;height:520px;}
+  .card.vertical{width:420px;height:747px;}
+
+  .card-inner{position:absolute;inset:0;padding:7%;display:flex;flex-direction:column;}
+
+  .noise{position:absolute;inset:0;opacity:.05;background-image:radial-gradient(circle,#fff 1px,transparent 1px);background-size:3px 3px;pointer-events:none;}
+  .glow{position:absolute;width:60%;height:60%;top:-20%;right:-20%;background:radial-gradient(circle, rgba(214,255,63,.14), transparent 70%);pointer-events:none;}
+
+  .top-row{display:flex;align-items:center;justify-content:space-between;position:relative;z-index:2;}
+  .logo{display:flex;align-items:center;gap:8px;}
+  .logo .mk{width:26px;height:26px;background:var(--lime);border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Archivo Black',sans-serif;color:#0B0B0E;font-size:13px;}
+  .logo .tx{font-family:'Archivo Black',sans-serif;font-size:12px;letter-spacing:.5px;}
+  .logo .tx span{color:var(--lime);}
+  .tag{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-low);letter-spacing:.5px;border:1px solid var(--line);padding:4px 8px;border-radius:20px;}
+
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--lime);letter-spacing:1.5px;text-transform:uppercase;margin-top:auto;position:relative;z-index:2;}
+
+  .headline{font-family:'Anton',sans-serif;font-weight:400;line-height:.92;letter-spacing:.2px;margin:8px 0 4px;position:relative;z-index:2;text-transform:uppercase;}
+  .sub{font-size:13px;color:var(--text-mid);position:relative;z-index:2;}
+
+  .stat-big{font-family:'Archivo Black',sans-serif;color:var(--lime);line-height:.85;position:relative;z-index:2;margin-top:14px;}
+  .stat-label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-mid);letter-spacing:1px;text-transform:uppercase;margin-top:8px;position:relative;z-index:2;}
+
+  .bottom-block{margin-top:auto;position:relative;z-index:2;}
+  .divider{height:1px;background:linear-gradient(90deg,var(--line),transparent);margin:16px 0;}
+
+  /* VS mode */
+  .vs-wrap{display:flex;flex-direction:column;gap:10px;position:relative;z-index:2;margin-top:14px;}
+  .vs-artist{display:flex;align-items:center;gap:12px;}
+  .vs-name{font-family:'Archivo Black',sans-serif;font-size:15px;min-width:34%;}
+  .vs-bar-track{flex:1;height:14px;background:var(--bg-field);border-radius:7px;overflow:hidden;}
+  .vs-bar-fill{height:100%;border-radius:7px;}
+  .vs-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-mid);min-width:60px;text-align:right;}
+  .vs-tag{font-family:'Archivo Black',sans-serif;font-size:28px;color:var(--coral);text-align:center;margin:2px 0;}
+
+  /* Touring mode */
+  .tour-list{display:flex;flex-direction:column;gap:8px;position:relative;z-index:2;margin-top:14px;}
+  .tour-row{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--bg-field);border-radius:8px;border-left:3px solid var(--lime);}
+  .tour-city{font-family:'Inter',sans-serif;font-weight:700;font-size:13px;}
+  .tour-date{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-mid);}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="panel">
+    <div class="brand"><div class="mark">A/</div><div class="word">AFRI <span>INDEX</span></div></div>
+
+    <div class="tabs">
+      <div class="tab active" data-mode="chart">Chart Check</div>
+      <div class="tab" data-mode="vs">VS</div>
+      <div class="tab" data-mode="tour">Touring</div>
+    </div>
+
+    <div class="section-title">Format</div>
+    <div class="aspect-row">
+      <div class="aspect-btn active" data-aspect="vertical">Vertical 9:16</div>
+      <div class="aspect-btn" data-aspect="square">Square 1:1</div>
+    </div>
+
+    <!-- CHART CHECK FIELDS -->
+    <div class="mode-fields" id="fields-chart">
+      <div class="section-title">Content</div>
+      <div class="field"><label>Eyebrow tag</label><input id="c-eyebrow" value="THIS WEEK'S BIGGEST MOVER" /></div>
+      <div class="field"><label>Artist / Song</label><input id="c-headline" value="Rema — Baby (Is It A Crime)" /></div>
+      <div class="field"><label>Big stat</label><input id="c-stat" value="212M" /></div>
+      <div class="field"><label>Stat label</label><input id="c-statlabel" value="Spotify streams · +18% this week" /></div>
+      <div class="field"><label>Footer note</label><input id="c-footer" value="Full chart at afriindex.com" /></div>
+    </div>
+
+    <!-- VS FIELDS -->
+    <div class="mode-fields" id="fields-vs" style="display:none;">
+      <div class="section-title">Content</div>
+      <div class="field"><label>Eyebrow tag</label><input id="v-eyebrow" value="ARTIST VS ARTIST" /></div>
+      <div class="field"><label>Headline</label><input id="v-headline" value="Omah Lay vs CKay" /></div>
+      <div class="field-row">
+        <div class="field"><label>Artist A</label><input id="v-a-name" value="Omah Lay" /></div>
+        <div class="field"><label>A streams</label><input id="v-a-num" value="184M" /></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Artist B</label><input id="v-b-name" value="CKay" /></div>
+        <div class="field"><label>B streams</label><input id="v-b-num" value="151M" /></div>
+      </div>
+      <div class="field"><label>Footer note</label><input id="v-footer" value="Full breakdown at afriindex.com" /></div>
+    </div>
+
+    <!-- TOUR FIELDS -->
+    <div class="mode-fields" id="fields-tour" style="display:none;">
+      <div class="section-title">Content</div>
+      <div class="field"><label>Eyebrow tag</label><input id="t-eyebrow" value="TOURING RADAR" /></div>
+      <div class="field"><label>Artist</label><input id="t-headline" value="Burna Boy" /></div>
+      <div class="field"><label>Sub line</label><input id="t-sub" value="Just added 3 more cities" /></div>
+      <div class="field-row"><div class="field"><label>City 1</label><input id="t-c1" value="Lagos" /></div><div class="field"><label>Date 1</label><input id="t-d1" value="Nov 14" /></div></div>
+      <div class="field-row"><div class="field"><label>City 2</label><input id="t-c2" value="Accra" /></div><div class="field"><label>Date 2</label><input id="t-d2" value="Nov 21" /></div></div>
+      <div class="field-row"><div class="field"><label>City 3</label><input id="t-c3" value="Nairobi" /></div><div class="field"><label>Date 3</label><input id="t-d3" value="Dec 02" /></div></div>
+      <div class="field"><label>Footer note</label><input id="t-footer" value="Full dates at afriindex.com" /></div>
+    </div>
+
+    <button class="download-btn" id="downloadBtn">DOWNLOAD PNG</button>
+    <p class="hint">Fill in this week's numbers, switch tabs for a different post type, then download. Vertical is sized for TikTok/Reels/Shorts covers — square works for feed posts.</p>
+  </div>
+
+  <div class="stage">
+    <div class="card vertical" id="card">
+      <div class="card-inner" id="cardInner"></div>
+      <div class="glow"></div>
+      <div class="noise"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const state = { mode:'chart', aspect:'vertical' };
+
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  state.mode = t.dataset.mode;
+  document.querySelectorAll('.mode-fields').forEach(f=>f.style.display='none');
+  document.getElementById('fields-'+state.mode).style.display='block';
+  render();
+}));
+
+document.querySelectorAll('.aspect-btn').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.aspect-btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  state.aspect = b.dataset.aspect;
+  const card = document.getElementById('card');
+  card.className = 'card ' + state.aspect;
+  render();
+}));
+
+document.querySelectorAll('input').forEach(inp=>inp.addEventListener('input', render));
+
+function val(id){ const el=document.getElementById(id); return el ? el.value : ''; }
+
+function render(){
+  const inner = document.getElementById('cardInner');
+  const bigFont = state.aspect === 'square' ? '15%' : '13%';
+
+  if(state.mode === 'chart'){
+    inner.innerHTML = `
+      <div class="top-row">
+        <div class="logo"><div class="mk">A/</div><div class="tx">AFRI <span>INDEX</span></div></div>
+        <div class="tag">WEEKLY</div>
+      </div>
+      <div class="eyebrow">${esc(val('c-eyebrow'))}</div>
+      <div class="headline" style="font-size:${state.aspect==='square'?'34px':'40px'}">${esc(val('c-headline'))}</div>
+      <div class="stat-big" style="font-size:${state.aspect==='square'?'88px':'104px'}">${esc(val('c-stat'))}</div>
+      <div class="stat-label">${esc(val('c-statlabel'))}</div>
+      <div class="bottom-block">
+        <div class="divider"></div>
+        <div class="sub">${esc(val('c-footer'))}</div>
+      </div>`;
+  }
+
+  if(state.mode === 'vs'){
+    const aNum = parseFloat(val('v-a-num')) || 1;
+    const bNum = parseFloat(val('v-b-num')) || 1;
+    const max = Math.max(aNum,bNum);
+    const aPct = (aNum/max*100).toFixed(0);
+    const bPct = (bNum/max*100).toFixed(0);
+    inner.innerHTML = `
+      <div class="top-row">
+        <div class="logo"><div class="mk">A/</div><div class="tx">AFRI <span>INDEX</span></div></div>
+        <div class="tag">FACE-OFF</div>
+      </div>
+      <div class="eyebrow">${esc(val('v-eyebrow'))}</div>
+      <div class="headline" style="font-size:${state.aspect==='square'?'30px':'36px'}">${esc(val('v-headline'))}</div>
+      <div class="vs-wrap">
+        <div class="vs-artist">
+          <div class="vs-name">${esc(val('v-a-name'))}</div>
+          <div class="vs-bar-track"><div class="vs-bar-fill" style="width:${aPct}%;background:var(--lime);"></div></div>
+          <div class="vs-num">${esc(val('v-a-num'))}</div>
+        </div>
+        <div class="vs-tag">VS</div>
+        <div class="vs-artist">
+          <div class="vs-name">${esc(val('v-b-name'))}</div>
+          <div class="vs-bar-track"><div class="vs-bar-fill" style="width:${bPct}%;background:var(--coral);"></div></div>
+          <div class="vs-num">${esc(val('v-b-num'))}</div>
+        </div>
+      </div>
+      <div class="bottom-block">
+        <div class="divider"></div>
+        <div class="sub">${esc(val('v-footer'))}</div>
+      </div>`;
+  }
+
+  if(state.mode === 'tour'){
+    inner.innerHTML = `
+      <div class="top-row">
+        <div class="logo"><div class="mk">A/</div><div class="tx">AFRI <span>INDEX</span></div></div>
+        <div class="tag">TOUR NEWS</div>
+      </div>
+      <div class="eyebrow">${esc(val('t-eyebrow'))}</div>
+      <div class="headline" style="font-size:${state.aspect==='square'?'34px':'40px'}">${esc(val('t-headline'))}</div>
+      <div class="sub">${esc(val('t-sub'))}</div>
+      <div class="tour-list">
+        <div class="tour-row"><div class="tour-city">${esc(val('t-c1'))}</div><div class="tour-date">${esc(val('t-d1'))}</div></div>
+        <div class="tour-row"><div class="tour-city">${esc(val('t-c2'))}</div><div class="tour-date">${esc(val('t-d2'))}</div></div>
+        <div class="tour-row"><div class="tour-city">${esc(val('t-c3'))}</div><div class="tour-date">${esc(val('t-d3'))}</div></div>
+      </div>
+      <div class="bottom-block">
+        <div class="divider"></div>
+        <div class="sub">${esc(val('t-footer'))}</div>
+      </div>`;
+  }
+}
+
+function esc(s){
+  const d = document.createElement('div');
+  d.innerText = s;
+  return d.innerHTML;
+}
+
+document.getElementById('downloadBtn').addEventListener('click', ()=>{
+  const card = document.getElementById('card');
+  const scale = state.aspect === 'square' ? (1080/520) : (1080/420);
+  html2canvas(card, {scale: scale, backgroundColor:'#0B0B0E'}).then(canvas=>{
+    const link = document.createElement('a');
+    link.download = 'afri-index-' + state.mode + '-' + Date.now() + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+});
+
+render();
+</script>
+</body>
+</html>
