@@ -1,290 +1,443 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Afri Index — Flier Generator</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Afri Index Flier Studio</title>
+<meta name="description" content="Create polished Afrobeats chart, artist comparison, tour and Top 5 countdown graphics.">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+:root{--ink:#090a0c;--panel:#111316;--field:#191c20;--line:#2a2e34;--lime:#d9ff43;--white:#f7f7f2;--muted:#979ca6;--accent:#d9ff43;--accent-soft:rgba(217,255,67,.16);--second:#ff6548}
+*{box-sizing:border-box}
+html{background:var(--ink)}
+body{margin:0;background:var(--ink);color:var(--white);font-family:'DM Sans',sans-serif}
+button,input,select{font:inherit}
+.app{min-height:100vh;display:grid;grid-template-columns:minmax(340px,430px) minmax(0,1fr)}
+.panel{min-width:0;background:var(--panel);border-right:1px solid var(--line);padding:26px 28px 130px;height:100vh;overflow-y:auto;position:relative;z-index:4}
+.row,.brand,.top,.section-head,.preview-bar,.card-footer{display:flex;align-items:center}
+.top,.section-head,.preview-bar,.card-footer{justify-content:space-between}
+.brand{gap:10px}
+.mark{width:37px;height:37px;display:grid;place-items:center;background:var(--lime);color:#080908;border-radius:9px 9px 9px 2px;font:14px 'Archivo Black',sans-serif}
+.brand-name{font:14px 'Archivo Black',sans-serif}
+.brand-name b{color:var(--lime)}
+.status{display:flex;align-items:center;gap:7px;color:#b7bbc2;border:1px solid #2f3339;padding:6px 9px;border-radius:99px;font:9px 'Space Mono',monospace;text-transform:uppercase}
+.status i{width:6px;height:6px;border-radius:50%;background:#62db7c}
+.intro{padding:48px 0 33px;border-bottom:1px solid var(--line)}
+.kicker,.eyebrow{color:var(--lime);font:700 10px 'Space Mono',monospace;letter-spacing:.15em}
+.intro h1{margin:11px 0;max-width:350px;font:38px/1.04 'Archivo Black',sans-serif;letter-spacing:-.045em}
+.intro p:last-child{margin:0;color:var(--muted);font-size:13px;line-height:1.6}
+.section{padding:25px 0;border-bottom:1px solid var(--line)}
+.section-head{margin-bottom:14px}
+.section-head span{font:700 10px 'Space Mono',monospace;letter-spacing:.1em;text-transform:uppercase}
+.section-head small{color:#676d77;font:9px 'Space Mono',monospace;text-transform:uppercase}
+.tabs{display:grid;grid-template-columns:repeat(2,1fr);gap:4px;background:#0c0e10;border:1px solid #262a30;border-radius:10px;padding:4px}
+.tab{height:40px;border:0;border-radius:7px;background:transparent;color:#7f858f;text-transform:uppercase;font:700 10px 'Space Mono',monospace;cursor:pointer}
+.tab.active{color:#090a0c;background:var(--lime)}
+.formats,.two,.style{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.format{height:42px;border:1px solid #30343a;border-radius:8px;background:var(--field);color:#9499a2;font-size:11px;cursor:pointer}
+.format.active{border-color:var(--lime);color:var(--lime);background:rgba(217,255,67,.06)}
+.style{margin-top:14px}
+.label{display:grid;gap:7px;min-width:0}
+.label>span{color:#777d86;font:700 9px 'Space Mono',monospace;letter-spacing:.07em;text-transform:uppercase}
+.label input,.label select{height:42px;width:100%;background:var(--field);border:1px solid #30343a;border-radius:8px;color:#ecece7;font-size:12px;padding:0 11px;outline:0}
+.label input:focus,.label select:focus{border-color:var(--lime);box-shadow:0 0 0 3px rgba(217,255,67,.08)}
+.fields{display:grid;gap:13px}
+.item-group{border:1px solid #262a30;border-radius:10px;padding:12px;display:grid;gap:9px;position:relative}
+.item-group .rank-badge{position:absolute;top:-9px;left:12px;background:var(--lime);color:#090a0c;font:9px 'Space Mono',monospace;padding:2px 8px;border-radius:99px}
+.upload{height:42px;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;background:var(--field);border:1px dashed #3c4149;border-radius:8px;color:#b1b5bc;font-size:11px}
+.upload:hover{border-color:var(--lime);color:var(--lime)}
+.upload input{display:none}
+.remove{display:none;margin-top:6px;border:0;background:none;color:#ff7058;font-size:10px;cursor:pointer}
+.toggle-row{display:flex;align-items:center;gap:10px;padding:12px;background:var(--field);border:1px solid #30343a;border-radius:8px;margin-top:14px;cursor:pointer}
+.toggle-row input{width:16px;height:16px;accent-color:var(--lime)}
+.toggle-row span{font-size:12px;color:#dcdedf}
+.toggle-row small{display:block;color:#777d86;font:9px 'Space Mono',monospace;margin-top:2px}
+.dock{position:fixed;left:0;bottom:0;width:430px;padding:14px 28px 17px;background:linear-gradient(180deg,rgba(17,19,22,.3),#111316 25%);border-top:1px solid var(--line);z-index:10}
+.download{width:100%;height:49px;border:0;border-radius:9px;background:var(--lime);color:#090a0c;font:13px 'Archivo Black',sans-serif;cursor:pointer}
+.download:hover{background:#e3ff78}
+.download:disabled{opacity:.6;cursor:wait}
+.dock p{margin:7px 0 0;text-align:center;color:#656a73;font:8px 'Space Mono',monospace;text-transform:uppercase;letter-spacing:.11em}
+.stage{min-width:0;min-height:100vh;padding:28px 36px 38px;display:flex;flex-direction:column;background:radial-gradient(circle at 68% 17%,rgba(217,255,67,.055),transparent 27%),#08090b;position:relative;overflow:hidden}
+.stage:before{content:"";position:absolute;inset:0;opacity:.24;background-image:linear-gradient(#17191d 1px,transparent 1px),linear-gradient(90deg,#17191d 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(90deg,transparent,#000 45%,#000)}
+.preview-bar{position:relative;z-index:2;padding-bottom:24px;color:#757a83;font:700 9px 'Space Mono',monospace;letter-spacing:.11em;text-transform:uppercase}
+.canvas{position:relative;z-index:2;flex:1;display:grid;place-items:center;min-height:0}
+.card{width:min(430px,100%);aspect-ratio:9/16;position:relative;overflow:hidden;color:#f8f8f3;background:#0b0c0e;box-shadow:0 38px 90px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.05);isolation:isolate}
+.card.square{width:min(560px,100%);aspect-ratio:1}
+.photo,.shade,.grid,.grain,.orb{position:absolute;inset:0;pointer-events:none}
+.photo{display:none;background-position:center 20%;background-size:cover;filter:saturate(.72) contrast(1.08);opacity:.63;z-index:-5}
+.shade{z-index:-4;background:linear-gradient(180deg,rgba(7,8,9,.18),rgba(7,8,9,.58) 44%,#090a0c 82%),linear-gradient(90deg,rgba(6,7,8,.9),transparent 70%)}
+.grid{z-index:-3;opacity:.18;background-image:linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px);background-size:46px 46px;mask-image:linear-gradient(180deg,transparent,#000 62%)}
+.grain{z-index:5;opacity:.035;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.85'/%3E%3C/svg%3E")}
+.orb{inset:auto -28% -12% auto;width:78%;aspect-ratio:1;border-radius:50%;z-index:-2;background:radial-gradient(circle,var(--accent-soft),transparent 66%)}
+.content{height:100%;padding:7%;display:flex;flex-direction:column}
+.card .mark{width:29px;height:29px;border-radius:7px 7px 7px 2px;background:var(--accent);font-size:11px}
+.card .brand-name{font-size:10px}
+.card .brand-name b{color:var(--accent)}
+.edition{color:#969aa1;border:1px solid rgba(255,255,255,.16);border-radius:99px;padding:6px 9px;font:7px 'Space Mono',monospace;letter-spacing:.1em}
+.body{margin:auto 0;position:relative}
+.eyebrow{color:var(--accent);margin:0 0 12px}
+.body h2{margin:0;max-width:95%;font:clamp(33px,4.6vw,57px)/.96 'Archivo Black',sans-serif;letter-spacing:-.055em;text-transform:uppercase}
+.hero-stat{margin-top:24px;color:var(--accent);font:clamp(84px,12vw,142px)/.79 'Archivo Black',sans-serif;letter-spacing:-.08em}
+.caption{margin:14px 0 0;color:#b5b7ba;font:9px 'Space Mono',monospace}
+.movement{display:flex;align-items:center;gap:10px;margin-top:27px}
+.movement>span{width:34px;height:34px;display:grid;place-items:center;color:#090a0c;background:var(--accent);border-radius:50%;font-size:17px;transform:rotate(-45deg)}
+.movement div{display:grid;gap:2px}
+.movement b{font:8px 'Space Mono',monospace}
+.movement small{color:#777b82;font:7px 'Space Mono',monospace;text-transform:uppercase}
+.vs-stack{margin-top:34px}
+.metric>div:first-child{display:grid;grid-template-columns:30px 1fr auto;align-items:end;gap:10px}
+.metric b{color:#6f737a;font:9px 'Space Mono',monospace}
+.metric span{font:clamp(16px,2.5vw,26px) 'Archivo Black',sans-serif;text-transform:uppercase}
+.metric strong{color:var(--accent);font:clamp(15px,2vw,22px) 'Space Mono',monospace}
+.metric.second strong{color:var(--second)}
+.bar{height:10px;margin-top:12px;background:rgba(255,255,255,.08);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.metric.second .bar i{background:var(--second)}
+.vs-label{margin:14px 0;color:#777b82;font:14px 'Archivo Black',sans-serif;text-align:center}
+.subline{margin:12px 0 0;color:#b9bbc0;font-size:12px}
+.dates{margin-top:30px;border-top:1px solid rgba(255,255,255,.18)}
+.date{display:grid;grid-template-columns:30px 1fr auto;align-items:center;gap:11px;padding:16px 0;border-bottom:1px solid rgba(255,255,255,.18)}
+.date b{color:var(--accent);font:8px 'Space Mono',monospace}
+.date span{font:clamp(17px,2.6vw,25px) 'Archivo Black',sans-serif;text-transform:uppercase}
+.date strong{font:9px 'Space Mono',monospace}
+.card-footer{gap:20px;border-top:1px solid rgba(255,255,255,.18);padding-top:14px;color:#9fa2a7;font:7px 'Space Mono',monospace;text-transform:uppercase}
+.card-footer b{color:var(--accent);text-align:right}
+.card.square .content{padding:6%}
+.card.square .hero-stat{margin-top:18px;font-size:clamp(72px,10vw,118px)}
+.card.square .movement{margin-top:20px}
+.card.square .body h2{font-size:clamp(31px,4.3vw,52px)}
+.card.square .dates{margin-top:22px}
+.card.square .date{padding:11px 0}
+.note{position:relative;z-index:2;margin:21px 0 0;text-align:center;color:#5f646d;font:8px 'Space Mono',monospace}
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);z-index:30;padding:11px 15px;border:1px solid #343940;border-radius:9px;background:#171a1e;color:#f5f5ef;font-size:12px;opacity:0;pointer-events:none;transition:.2s}
+.toast.show{opacity:1;transform:translate(-50%,0)}
 
-  :root{
-    --bg-deep:#0B0B0E;
-    --bg-panel:#141417;
-    --bg-field:#1D1D22;
-    --lime:#D6FF3F;
-    --lime-dim:#a8cc2f;
-    --coral:#FF5A3C;
-    --text-hi:#F5F5F0;
-    --text-mid:#B7B7BE;
-    --text-low:#6E6E76;
-    --line:#2A2A30;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;background:var(--bg-deep);color:var(--text-hi);font-family:'Inter',sans-serif;}
-  .app{display:grid;grid-template-columns:380px 1fr;min-height:100vh;}
-  @media (max-width:900px){ .app{grid-template-columns:1fr;} }
+/* --- rank list (Top 5, non-carousel) --- */
+.rank-list{margin-top:26px;display:grid;gap:10px}
+.rank-row{display:grid;grid-template-columns:38px 1fr auto;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.14)}
+.rank-row:last-child{border-bottom:0}
+.rank-num{font:16px 'Archivo Black',sans-serif;color:var(--accent)}
+.rank-name{font:clamp(14px,1.9vw,18px) 'Archivo Black',sans-serif;text-transform:uppercase;letter-spacing:-.02em}
+.rank-stat{font:10px 'Space Mono',monospace;color:#b5b7ba;text-align:right}
 
-  /* ---------- CONTROL PANEL ---------- */
-  .panel{background:var(--bg-panel);padding:28px 24px;border-right:1px solid var(--line);overflow-y:auto;}
-  .brand{display:flex;align-items:center;gap:10px;margin-bottom:26px;}
-  .brand .mark{width:34px;height:34px;background:var(--lime);border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Archivo Black',sans-serif;color:#0B0B0E;font-size:16px;}
-  .brand .word{font-family:'Archivo Black',sans-serif;font-size:15px;letter-spacing:0.5px;}
-  .brand .word span{color:var(--lime);}
+/* --- carousel cover / item slides --- */
+.cover-wrap{margin:auto 0;text-align:left}
+.cover-wrap .swipe{margin-top:30px;display:flex;align-items:center;gap:8px;color:var(--accent);font:9px 'Space Mono',monospace;letter-spacing:.1em;text-transform:uppercase}
+.item-slide{margin:auto 0}
+.item-slide .rank-huge{font:clamp(120px,20vw,220px)/.78 'Archivo Black',sans-serif;color:var(--accent);letter-spacing:-.08em}
+.item-slide .rank-name-big{margin-top:10px;font:clamp(26px,4vw,42px)/1.02 'Archivo Black',sans-serif;text-transform:uppercase;letter-spacing:-.04em;max-width:90%}
+.item-slide .rank-stat-big{margin-top:10px;color:#b5b7ba;font:11px 'Space Mono',monospace}
+.item-slide .swipe{margin-top:28px;display:flex;align-items:center;gap:8px;color:var(--accent);font:9px 'Space Mono',monospace;letter-spacing:.1em;text-transform:uppercase}
 
-  .tabs{display:flex;gap:6px;margin-bottom:22px;background:var(--bg-field);padding:4px;border-radius:10px;}
-  .tab{flex:1;text-align:center;padding:9px 4px;font-size:12px;font-weight:700;letter-spacing:.3px;color:var(--text-mid);border-radius:7px;cursor:pointer;user-select:none;transition:.15s;}
-  .tab.active{background:var(--lime);color:#0B0B0E;}
+/* --- carousel nav under canvas --- */
+.slide-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:18px;position:relative;z-index:2}
+.slide-btn{width:36px;height:36px;border-radius:50%;border:1px solid #30343a;background:var(--field);color:#dcdedf;cursor:pointer;font-size:14px}
+.slide-btn:hover{border-color:var(--lime);color:var(--lime)}
+.slide-btn:disabled{opacity:.35;cursor:default}
+.slide-count{font:10px 'Space Mono',monospace;color:#8a8f97;letter-spacing:.08em;text-transform:uppercase}
 
-  .field{margin-bottom:16px;}
-  .field label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-low);margin-bottom:6px;}
-  .field input, .field select{width:100%;background:var(--bg-field);border:1px solid var(--line);color:var(--text-hi);padding:10px 12px;border-radius:8px;font-family:'Inter',sans-serif;font-size:13.5px;}
-  .field input:focus, .field select:focus{outline:none;border-color:var(--lime);}
-  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-
-  .section-title{font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--lime);margin:22px 0 12px;padding-top:16px;border-top:1px solid var(--line);}
-  .section-title:first-of-type{border-top:none;padding-top:0;margin-top:0;}
-
-  .aspect-row{display:flex;gap:8px;margin-bottom:18px;}
-  .aspect-btn{flex:1;padding:9px 4px;border-radius:8px;border:1px solid var(--line);background:var(--bg-field);color:var(--text-mid);font-size:12px;font-weight:600;cursor:pointer;text-align:center;}
-  .aspect-btn.active{border-color:var(--lime);color:var(--lime);}
-
-  .download-btn{width:100%;padding:14px;background:var(--lime);color:#0B0B0E;border:none;border-radius:10px;font-family:'Archivo Black',sans-serif;font-size:13px;letter-spacing:.4px;cursor:pointer;margin-top:8px;transition:.15s;}
-  .download-btn:hover{background:var(--lime-dim);}
-  .hint{font-size:11.5px;color:var(--text-low);margin-top:10px;line-height:1.5;}
-
-  /* ---------- PREVIEW STAGE ---------- */
-  .stage{display:flex;align-items:center;justify-content:center;padding:40px 20px;background:
-    radial-gradient(circle at 30% 20%, #17171c 0%, var(--bg-deep) 60%);}
-
-  .card{position:relative;background:#0B0B0E;overflow:hidden;font-family:'Inter',sans-serif;color:var(--text-hi);
-    box-shadow:0 30px 70px rgba(0,0,0,.55);}
-  .card.square{width:520px;height:520px;}
-  .card.vertical{width:420px;height:747px;}
-
-  .card-inner{position:absolute;inset:0;padding:7%;display:flex;flex-direction:column;}
-
-  .noise{position:absolute;inset:0;opacity:.05;background-image:radial-gradient(circle,#fff 1px,transparent 1px);background-size:3px 3px;pointer-events:none;}
-  .glow{position:absolute;width:60%;height:60%;top:-20%;right:-20%;background:radial-gradient(circle, rgba(214,255,63,.14), transparent 70%);pointer-events:none;}
-
-  .top-row{display:flex;align-items:center;justify-content:space-between;position:relative;z-index:2;}
-  .logo{display:flex;align-items:center;gap:8px;}
-  .logo .mk{width:26px;height:26px;background:var(--lime);border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Archivo Black',sans-serif;color:#0B0B0E;font-size:13px;}
-  .logo .tx{font-family:'Archivo Black',sans-serif;font-size:12px;letter-spacing:.5px;}
-  .logo .tx span{color:var(--lime);}
-  .tag{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-low);letter-spacing:.5px;border:1px solid var(--line);padding:4px 8px;border-radius:20px;}
-
-  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--lime);letter-spacing:1.5px;text-transform:uppercase;margin-top:auto;position:relative;z-index:2;}
-
-  .headline{font-family:'Anton',sans-serif;font-weight:400;line-height:.92;letter-spacing:.2px;margin:8px 0 4px;position:relative;z-index:2;text-transform:uppercase;}
-  .sub{font-size:13px;color:var(--text-mid);position:relative;z-index:2;}
-
-  .stat-big{font-family:'Archivo Black',sans-serif;color:var(--lime);line-height:.85;position:relative;z-index:2;margin-top:14px;}
-  .stat-label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-mid);letter-spacing:1px;text-transform:uppercase;margin-top:8px;position:relative;z-index:2;}
-
-  .bottom-block{margin-top:auto;position:relative;z-index:2;}
-  .divider{height:1px;background:linear-gradient(90deg,var(--line),transparent);margin:16px 0;}
-
-  /* VS mode */
-  .vs-wrap{display:flex;flex-direction:column;gap:10px;position:relative;z-index:2;margin-top:14px;}
-  .vs-artist{display:flex;align-items:center;gap:12px;}
-  .vs-name{font-family:'Archivo Black',sans-serif;font-size:15px;min-width:34%;}
-  .vs-bar-track{flex:1;height:14px;background:var(--bg-field);border-radius:7px;overflow:hidden;}
-  .vs-bar-fill{height:100%;border-radius:7px;}
-  .vs-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-mid);min-width:60px;text-align:right;}
-  .vs-tag{font-family:'Archivo Black',sans-serif;font-size:28px;color:var(--coral);text-align:center;margin:2px 0;}
-
-  /* Touring mode */
-  .tour-list{display:flex;flex-direction:column;gap:8px;position:relative;z-index:2;margin-top:14px;}
-  .tour-row{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--bg-field);border-radius:8px;border-left:3px solid var(--lime);}
-  .tour-city{font-family:'Inter',sans-serif;font-weight:700;font-size:13px;}
-  .tour-date{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-mid);}
+@media(max-width:980px){.app{grid-template-columns:1fr}.panel{height:auto;overflow:visible;border-right:0;border-bottom:1px solid var(--line);padding:22px 22px 118px}.intro{padding-top:35px}.intro h1{max-width:600px}.dock{width:100%;padding:12px 22px 14px}.stage{min-height:760px;padding:25px 20px 34px}.card{width:min(420px,100%)}}
+@media(max-width:520px){.panel{padding-inline:16px}.status{display:none}.intro{padding:30px 0 25px}.intro h1{font-size:30px}.style,.two{grid-template-columns:1fr}.dock{padding-inline:16px}.stage{min-height:680px;padding-inline:13px}.card.vertical{width:min(360px,100%)}}
 </style>
 </head>
 <body>
-<div class="app">
+<main class="app">
+  <aside class="panel">
+    <header class="top"><div class="brand"><span class="mark">A/</span><span class="brand-name">AFRI <b>INDEX</b></span></div><span class="status"><i></i> Live preview</span></header>
+    <div class="intro"><p class="kicker">SOCIAL CREATIVE STUDIO</p><h1>Make the numbers look as big as they feel.</h1><p>Build clean Afrobeats chart cards, countdowns and carousels—ready for Reels, TikTok and the feed.</p></div>
 
-  <div class="panel">
-    <div class="brand"><div class="mark">A/</div><div class="word">AFRI <span>INDEX</span></div></div>
-
-    <div class="tabs">
-      <div class="tab active" data-mode="chart">Chart Check</div>
-      <div class="tab" data-mode="vs">VS</div>
-      <div class="tab" data-mode="tour">Touring</div>
-    </div>
-
-    <div class="section-title">Format</div>
-    <div class="aspect-row">
-      <div class="aspect-btn active" data-aspect="vertical">Vertical 9:16</div>
-      <div class="aspect-btn" data-aspect="square">Square 1:1</div>
-    </div>
-
-    <!-- CHART CHECK FIELDS -->
-    <div class="mode-fields" id="fields-chart">
-      <div class="section-title">Content</div>
-      <div class="field"><label>Eyebrow tag</label><input id="c-eyebrow" value="THIS WEEK'S BIGGEST MOVER" /></div>
-      <div class="field"><label>Artist / Song</label><input id="c-headline" value="Rema — Baby (Is It A Crime)" /></div>
-      <div class="field"><label>Big stat</label><input id="c-stat" value="212M" /></div>
-      <div class="field"><label>Stat label</label><input id="c-statlabel" value="Spotify streams · +18% this week" /></div>
-      <div class="field"><label>Footer note</label><input id="c-footer" value="Full chart at afriindex.com" /></div>
-    </div>
-
-    <!-- VS FIELDS -->
-    <div class="mode-fields" id="fields-vs" style="display:none;">
-      <div class="section-title">Content</div>
-      <div class="field"><label>Eyebrow tag</label><input id="v-eyebrow" value="ARTIST VS ARTIST" /></div>
-      <div class="field"><label>Headline</label><input id="v-headline" value="Omah Lay vs CKay" /></div>
-      <div class="field-row">
-        <div class="field"><label>Artist A</label><input id="v-a-name" value="Omah Lay" /></div>
-        <div class="field"><label>A streams</label><input id="v-a-num" value="184M" /></div>
+    <section class="section">
+      <div class="section-head"><span>01 · Post type</span><small>Choose a layout</small></div>
+      <div class="tabs">
+        <button class="tab active" data-mode="chart">Chart check</button>
+        <button class="tab" data-mode="vs">VS</button>
+        <button class="tab" data-mode="tour">Touring</button>
+        <button class="tab" data-mode="top5">Top 5</button>
       </div>
-      <div class="field-row">
-        <div class="field"><label>Artist B</label><input id="v-b-name" value="CKay" /></div>
-        <div class="field"><label>B streams</label><input id="v-b-num" value="151M" /></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><span>02 · Format & style</span><small id="resolution">1080 × 1920</small></div>
+      <div class="formats">
+        <button class="format active" data-aspect="vertical">9:16 Vertical ✓</button>
+        <button class="format" data-aspect="square">1:1 Square</button>
       </div>
-      <div class="field"><label>Footer note</label><input id="v-footer" value="Full breakdown at afriindex.com" /></div>
+      <div class="style">
+        <label class="label"><span>Accent colour</span>
+          <select id="theme">
+            <option value="lime">Index lime</option>
+            <option value="orange">Sunset orange</option>
+            <option value="blue">Electric blue</option>
+          </select>
+        </label>
+        <div class="label">
+          <span>Artist image</span>
+          <label class="upload">＋ Add / replace<input id="image" type="file" accept="image/png,image/jpeg,image/webp"></label>
+          <button class="remove" id="remove">Remove image</button>
+        </div>
+      </div>
+      <label class="toggle-row" id="carouselToggleRow" style="display:none">
+        <input type="checkbox" id="carouselToggle">
+        <span>Export as carousel<small>Cover slide + 5 ranked slides, downloaded as a ZIP of 6 PNGs</small></span>
+      </label>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><span>03 · Content</span><small>Changes update live</small></div>
+      <div class="fields" id="fields"></div>
+    </section>
+
+    <div class="dock">
+      <button class="download" id="download">↓ Download high-res PNG</button>
+      <p id="dockNote">No watermark · Ready to post</p>
     </div>
+  </aside>
 
-    <!-- TOUR FIELDS -->
-    <div class="mode-fields" id="fields-tour" style="display:none;">
-      <div class="section-title">Content</div>
-      <div class="field"><label>Eyebrow tag</label><input id="t-eyebrow" value="TOURING RADAR" /></div>
-      <div class="field"><label>Artist</label><input id="t-headline" value="Burna Boy" /></div>
-      <div class="field"><label>Sub line</label><input id="t-sub" value="Just added 3 more cities" /></div>
-      <div class="field-row"><div class="field"><label>City 1</label><input id="t-c1" value="Lagos" /></div><div class="field"><label>Date 1</label><input id="t-d1" value="Nov 14" /></div></div>
-      <div class="field-row"><div class="field"><label>City 2</label><input id="t-c2" value="Accra" /></div><div class="field"><label>Date 2</label><input id="t-d2" value="Nov 21" /></div></div>
-      <div class="field-row"><div class="field"><label>City 3</label><input id="t-c3" value="Nairobi" /></div><div class="field"><label>Date 3</label><input id="t-d3" value="Dec 02" /></div></div>
-      <div class="field"><label>Footer note</label><input id="t-footer" value="Full dates at afriindex.com" /></div>
+  <section class="stage">
+    <div class="preview-bar"><span>✦ Live canvas</span><span id="formatName">STORY / REEL</span></div>
+    <div class="canvas">
+      <div class="card vertical" id="card">
+        <div class="photo" id="photo"></div>
+        <div class="shade"></div>
+        <div class="grid"></div>
+        <div class="grain"></div>
+        <div class="orb"></div>
+        <div class="content" id="content"></div>
+      </div>
     </div>
-
-    <button class="download-btn" id="downloadBtn">DOWNLOAD PNG</button>
-    <p class="hint">Fill in this week's numbers, switch tabs for a different post type, then download. Vertical is sized for TikTok/Reels/Shorts covers — square works for feed posts.</p>
-  </div>
-
-  <div class="stage">
-    <div class="card vertical" id="card">
-      <div class="card-inner" id="cardInner"></div>
-      <div class="glow"></div>
-      <div class="noise"></div>
+    <div class="slide-nav" id="slideNav" style="display:none">
+      <button class="slide-btn" id="prevSlide">‹</button>
+      <span class="slide-count" id="slideCount">1 / 6</span>
+      <button class="slide-btn" id="nextSlide">›</button>
     </div>
-  </div>
-
-</div>
+    <p class="note">Your export is rendered at full social resolution, even when the preview is smaller.</p>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
 
 <script>
-const state = { mode:'chart', aspect:'vertical' };
+const state={
+  mode:'chart',aspect:'vertical',theme:'lime',image:null,
+  carousel:false, slide:0, // 0 = cover, 1..5 = countdown positions rank5..rank1
+  data:{
+    chart:{eyebrow:"THIS WEEK’S BIGGEST MOVER",headline:"Rema — Baby (Is It A Crime)",stat:'212M',label:'Spotify streams · +18% this week',footer:'Full chart at afriindex.com'},
+    vs:{eyebrow:'ARTIST VS ARTIST',headline:'Omah Lay vs CKay',artistA:'Omah Lay',valueA:'184M',artistB:'CKay',valueB:'151M',footer:'Full breakdown at afriindex.com'},
+    tour:{eyebrow:'TOURING RADAR',headline:'Burna Boy',subline:'Just added 3 more cities',city1:'Lagos',date1:'Nov 14',city2:'Accra',date2:'Nov 21',city3:'Nairobi',date3:'Dec 02',footer:'Full dates at afriindex.com'},
+    top5:{eyebrow:'TOP 5 THIS WEEK',headline:'Biggest Afrobeats Songs Right Now',footer:'Full chart at afriindex.com',
+      item1:{name:'Rema — Baby (Is It A Crime)',stat:'212M streams'},
+      item2:{name:'Omah Lay — Cheat',stat:'184M streams'},
+      item3:{name:'CKay — Emiliana',stat:'151M streams'},
+      item4:{name:'Ayra Starr — Rush',stat:'139M streams'},
+      item5:{name:'Asake — Lonely At The Top',stat:'118M streams'}}
+  }
+};
 
-document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
-  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-  t.classList.add('active');
-  state.mode = t.dataset.mode;
-  document.querySelectorAll('.mode-fields').forEach(f=>f.style.display='none');
-  document.getElementById('fields-'+state.mode).style.display='block';
-  render();
-}));
+const schemas={
+  chart:[['eyebrow','Eyebrow tag'],['headline','Artist / Song'],['stat','Big stat'],['label','Stat label'],['footer','Footer note']],
+  vs:[['eyebrow','Eyebrow tag'],['headline','Headline'],['artistA','Artist A'],['valueA','A streams'],['artistB','Artist B'],['valueB','B streams'],['footer','Footer note']],
+  tour:[['eyebrow','Eyebrow tag'],['headline','Artist'],['subline','Sub line'],['city1','City 1'],['date1','Date 1'],['city2','City 2'],['date2','Date 2'],['city3','City 3'],['date3','Date 3'],['footer','Footer note']]
+};
 
-document.querySelectorAll('.aspect-btn').forEach(b=>b.addEventListener('click',()=>{
-  document.querySelectorAll('.aspect-btn').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active');
-  state.aspect = b.dataset.aspect;
-  const card = document.getElementById('card');
-  card.className = 'card ' + state.aspect;
-  render();
-}));
+const palettes={lime:['#d9ff43','rgba(217,255,67,.16)','#ff6548'],orange:['#ff7849','rgba(255,120,73,.17)','#ffd23f'],blue:['#70dcff','rgba(112,220,255,.16)','#b69cff']};
 
-document.querySelectorAll('input').forEach(inp=>inp.addEventListener('input', render));
+const esc=s=>{const d=document.createElement('div');d.textContent=s;return d.innerHTML};
+const brand=`<div class="brand"><span class="mark">A/</span><span class="brand-name">AFRI <b>INDEX</b></span></div>`;
 
-function val(id){ const el=document.getElementById(id); return el ? el.value : ''; }
+function showToast(message){const t=document.querySelector('#toast');t.textContent=message;t.classList.add('show');clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>t.classList.remove('show'),2600)}
 
+function metric(v){return parseFloat(String(v).replace(/,/g,''))||0}
+
+/* ---------- FIELD PANEL ---------- */
+function fieldHtml(){
+  const box=document.querySelector('#fields');
+  if(state.mode!=='top5'){
+    box.innerHTML=schemas[state.mode].map(([key,label])=>
+      `<label class="label"><span>${label}</span><input data-key="${key}" maxlength="80" value="${esc(state.data[state.mode][key])}"></label>`
+    ).join('');
+    box.querySelectorAll('input').forEach(i=>i.addEventListener('input',e=>{
+      state.data[state.mode][e.target.dataset.key]=e.target.value; render();
+    }));
+    return;
+  }
+  // top5 fields: eyebrow, headline, footer, then 5 item groups
+  const d=state.data.top5;
+  let html=`
+    <label class="label"><span>Eyebrow tag</span><input data-key="eyebrow" maxlength="80" value="${esc(d.eyebrow)}"></label>
+    <label class="label"><span>Headline</span><input data-key="headline" maxlength="80" value="${esc(d.headline)}"></label>`;
+  for(let n=1;n<=5;n++){
+    html+=`
+    <div class="item-group"><span class="rank-badge">RANK ${n}</span>
+      <label class="label"><span>Name</span><input data-item="${n}" data-field="name" maxlength="60" value="${esc(d['item'+n].name)}"></label>
+      <label class="label"><span>Stat</span><input data-item="${n}" data-field="stat" maxlength="40" value="${esc(d['item'+n].stat)}"></label>
+    </div>`;
+  }
+  html+=`<label class="label"><span>Footer note</span><input data-key="footer" maxlength="80" value="${esc(d.footer)}"></label>`;
+  box.innerHTML=html;
+  box.querySelectorAll('input[data-key]').forEach(i=>i.addEventListener('input',e=>{
+    state.data.top5[e.target.dataset.key]=e.target.value; render();
+  }));
+  box.querySelectorAll('input[data-item]').forEach(i=>i.addEventListener('input',e=>{
+    state.data.top5['item'+e.target.dataset.item][e.target.dataset.field]=e.target.value; render();
+  }));
+}
+
+/* ---------- CARD RENDER ---------- */
 function render(){
-  const inner = document.getElementById('cardInner');
-  const bigFont = state.aspect === 'square' ? '15%' : '13%';
+  const carouselOn = state.mode==='top5' && state.carousel;
+  document.querySelector('#carouselToggleRow').style.display = state.mode==='top5' ? 'flex' : 'none';
+  document.querySelector('#slideNav').style.display = carouselOn ? 'flex' : 'none';
 
-  if(state.mode === 'chart'){
-    inner.innerHTML = `
-      <div class="top-row">
-        <div class="logo"><div class="mk">A/</div><div class="tx">AFRI <span>INDEX</span></div></div>
-        <div class="tag">WEEKLY</div>
-      </div>
-      <div class="eyebrow">${esc(val('c-eyebrow'))}</div>
-      <div class="headline" style="font-size:${state.aspect==='square'?'34px':'40px'}">${esc(val('c-headline'))}</div>
-      <div class="stat-big" style="font-size:${state.aspect==='square'?'88px':'104px'}">${esc(val('c-stat'))}</div>
-      <div class="stat-label">${esc(val('c-statlabel'))}</div>
-      <div class="bottom-block">
-        <div class="divider"></div>
-        <div class="sub">${esc(val('c-footer'))}</div>
-      </div>`;
+  if(state.mode==='top5' && !state.carousel) state.slide=0;
+
+  const d=state.data[state.mode];
+  let body='', edition='';
+
+  if(state.mode==='chart'){
+    edition='WEEKLY / 026';
+    body=`<div class="body"><p class="eyebrow">${esc(d.eyebrow)}</p><h2>${esc(d.headline)}</h2><div class="hero-stat">${esc(d.stat)}</div><p class="caption">${esc(d.label)}</p><div class="movement"><span>→</span><div><b>UP THIS WEEK</b><small>Momentum report</small></div></div></div>`;
   }
 
-  if(state.mode === 'vs'){
-    const aNum = parseFloat(val('v-a-num')) || 1;
-    const bNum = parseFloat(val('v-b-num')) || 1;
-    const max = Math.max(aNum,bNum);
-    const aPct = (aNum/max*100).toFixed(0);
-    const bPct = (bNum/max*100).toFixed(0);
-    inner.innerHTML = `
-      <div class="top-row">
-        <div class="logo"><div class="mk">A/</div><div class="tx">AFRI <span>INDEX</span></div></div>
-        <div class="tag">FACE-OFF</div>
-      </div>
-      <div class="eyebrow">${esc(val('v-eyebrow'))}</div>
-      <div class="headline" style="font-size:${state.aspect==='square'?'30px':'36px'}">${esc(val('v-headline'))}</div>
-      <div class="vs-wrap">
-        <div class="vs-artist">
-          <div class="vs-name">${esc(val('v-a-name'))}</div>
-          <div class="vs-bar-track"><div class="vs-bar-fill" style="width:${aPct}%;background:var(--lime);"></div></div>
-          <div class="vs-num">${esc(val('v-a-num'))}</div>
-        </div>
-        <div class="vs-tag">VS</div>
-        <div class="vs-artist">
-          <div class="vs-name">${esc(val('v-b-name'))}</div>
-          <div class="vs-bar-track"><div class="vs-bar-fill" style="width:${bPct}%;background:var(--coral);"></div></div>
-          <div class="vs-num">${esc(val('v-b-num'))}</div>
-        </div>
-      </div>
-      <div class="bottom-block">
-        <div class="divider"></div>
-        <div class="sub">${esc(val('v-footer'))}</div>
-      </div>`;
+  if(state.mode==='vs'){
+    edition='DATA FACE-OFF';
+    const max=Math.max(metric(d.valueA),metric(d.valueB),1),a=Math.max(metric(d.valueA)/max*100,6),b=Math.max(metric(d.valueB)/max*100,6);
+    body=`<div class="body"><p class="eyebrow">${esc(d.eyebrow)}</p><h2>${esc(d.headline)}</h2><div class="vs-stack"><div class="metric"><div><b>01</b><span>${esc(d.artistA)}</span><strong>${esc(d.valueA)}</strong></div><div class="bar"><i style="width:${a}%"></i></div></div><div class="vs-label">VS</div><div class="metric second"><div><b>02</b><span>${esc(d.artistB)}</span><strong>${esc(d.valueB)}</strong></div><div class="bar"><i style="width:${b}%"></i></div></div></div></div>`;
   }
 
-  if(state.mode === 'tour'){
-    inner.innerHTML = `
-      <div class="top-row">
-        <div class="logo"><div class="mk">A/</div><div class="tx">AFRI <span>INDEX</span></div></div>
-        <div class="tag">TOUR NEWS</div>
-      </div>
-      <div class="eyebrow">${esc(val('t-eyebrow'))}</div>
-      <div class="headline" style="font-size:${state.aspect==='square'?'34px':'40px'}">${esc(val('t-headline'))}</div>
-      <div class="sub">${esc(val('t-sub'))}</div>
-      <div class="tour-list">
-        <div class="tour-row"><div class="tour-city">${esc(val('t-c1'))}</div><div class="tour-date">${esc(val('t-d1'))}</div></div>
-        <div class="tour-row"><div class="tour-city">${esc(val('t-c2'))}</div><div class="tour-date">${esc(val('t-d2'))}</div></div>
-        <div class="tour-row"><div class="tour-city">${esc(val('t-c3'))}</div><div class="tour-date">${esc(val('t-d3'))}</div></div>
-      </div>
-      <div class="bottom-block">
-        <div class="divider"></div>
-        <div class="sub">${esc(val('t-footer'))}</div>
-      </div>`;
+  if(state.mode==='tour'){
+    edition='TOUR FILE';
+    body=`<div class="body"><p class="eyebrow">${esc(d.eyebrow)}</p><h2>${esc(d.headline)}</h2><p class="subline">${esc(d.subline)}</p><div class="dates">${[1,2,3].map(n=>`<div class="date"><b>0${n}</b><span>${esc(d['city'+n])}</span><strong>${esc(d['date'+n])}</strong></div>`).join('')}</div></div>`;
   }
+
+  if(state.mode==='top5' && !state.carousel){
+    edition='TOP 5';
+    body=`<div class="body"><p class="eyebrow">${esc(d.eyebrow)}</p><h2>${esc(d.headline)}</h2><div class="rank-list">${[1,2,3,4,5].map(n=>`<div class="rank-row"><span class="rank-num">0${n}</span><span class="rank-name">${esc(d['item'+n].name)}</span><span class="rank-stat">${esc(d['item'+n].stat)}</span></div>`).join('')}</div></div>`;
+  }
+
+  if(state.mode==='top5' && state.carousel){
+    const total=6; // cover + 5 ranks
+    document.querySelector('#slideCount').textContent=(state.slide+1)+' / '+total;
+    document.querySelector('#prevSlide').disabled = state.slide===0;
+    document.querySelector('#nextSlide').disabled = state.slide===total-1;
+
+    if(state.slide===0){
+      edition='TOP 5 · 1/6';
+      body=`<div class="cover-wrap"><p class="eyebrow">${esc(d.eyebrow)}</p><h2>${esc(d.headline)}</h2><p class="subline">Swipe through the full countdown</p><div class="swipe">SWIPE FOR #5 →</div></div>`;
+    } else {
+      // slide 1..5 -> countdown order rank5,4,3,2,1
+      const rank = total - state.slide; // slide1->rank5 ... slide5->rank1
+      const item = d['item'+rank];
+      edition = 'TOP 5 · '+(state.slide+1)+'/6';
+      const isLast = state.slide===total-1;
+      body=`<div class="item-slide"><p class="eyebrow">RANK</p><div class="rank-huge">${rank<10?'0'+rank:rank}</div><div class="rank-name-big">${esc(item.name)}</div><p class="rank-stat-big">${esc(item.stat)}</p><div class="swipe">${isLast?'FULL LIST AT AFRIINDEX.COM':'NEXT →'}</div></div>`;
+    }
+  }
+
+  document.querySelector('#content').innerHTML=`<div class="top">${brand}<span class="edition">${edition}</span></div>${body}<footer class="card-footer"><span>${esc(d.footer)}</span><b>AFRICA’S MUSIC, MEASURED.</b></footer>`;
+  document.querySelector('#download').textContent = (state.mode==='top5' && state.carousel) ? '↓ Download Carousel (ZIP · 6 PNGs)' : '↓ Download high-res PNG';
+  document.querySelector('#dockNote').textContent = (state.mode==='top5' && state.carousel) ? 'No watermark · 6 slides, cover + ranks 5→1' : 'No watermark · Ready to post';
 }
 
-function esc(s){
-  const d = document.createElement('div');
-  d.innerText = s;
-  return d.innerHTML;
-}
-
-document.getElementById('downloadBtn').addEventListener('click', ()=>{
-  const card = document.getElementById('card');
-  const scale = state.aspect === 'square' ? (1080/520) : (1080/420);
-  html2canvas(card, {scale: scale, backgroundColor:'#0B0B0E'}).then(canvas=>{
-    const link = document.createElement('a');
-    link.download = 'afri-index-' + state.mode + '-' + Date.now() + '.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-  });
+/* ---------- TAB / FORMAT / STYLE CONTROLS ---------- */
+document.querySelectorAll('.tab').forEach(btn=>btn.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  state.mode=btn.dataset.mode;
+  if(state.mode!=='top5'){ state.carousel=false; document.querySelector('#carouselToggle').checked=false; }
+  state.slide=0;
+  fieldHtml(); render();
 });
 
+document.querySelectorAll('.format').forEach(btn=>btn.onclick=()=>{
+  document.querySelectorAll('.format').forEach(b=>{b.classList.remove('active');b.textContent=b.dataset.aspect==='vertical'?'9:16 Vertical':'1:1 Square'});
+  btn.classList.add('active'); btn.textContent+=' ✓';
+  state.aspect=btn.dataset.aspect;
+  document.querySelector('#card').className='card '+state.aspect;
+  document.querySelector('#resolution').textContent = state.aspect==='vertical' ? '1080 × 1920' : '1080 × 1080';
+  document.querySelector('#formatName').textContent = state.aspect==='vertical' ? 'STORY / REEL' : 'FEED POST';
+});
+
+document.querySelector('#theme').onchange=e=>{
+  const p=palettes[e.target.value];
+  document.documentElement.style.setProperty('--accent',p[0]);
+  document.documentElement.style.setProperty('--accent-soft',p[1]);
+  document.documentElement.style.setProperty('--second',p[2]);
+};
+
+document.querySelector('#image').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  if(!f.type.startsWith('image/')||f.size>8388608) return showToast('Choose an image under 8 MB.');
+  if(state.image) URL.revokeObjectURL(state.image);
+  state.image=URL.createObjectURL(f);
+  const p=document.querySelector('#photo');
+  p.style.backgroundImage=`url(${state.image})`; p.style.display='block';
+  document.querySelector('#remove').style.display='block';
+  showToast('Image added to the design.');
+};
+document.querySelector('#remove').onclick=()=>{
+  document.querySelector('#photo').style.display='none';
+  document.querySelector('#remove').style.display='none';
+  state.image=null;
+};
+
+document.querySelector('#carouselToggle').onchange=e=>{
+  state.carousel=e.target.checked; state.slide=0; render();
+};
+document.querySelector('#prevSlide').onclick=()=>{ if(state.slide>0){ state.slide--; render(); } };
+document.querySelector('#nextSlide').onclick=()=>{ if(state.slide<5){ state.slide++; render(); } };
+
+/* ---------- EXPORT ---------- */
+async function captureCurrentSlide(){
+  const card=document.querySelector('#card');
+  const canvas=await html2canvas(card,{scale:1080/card.offsetWidth,backgroundColor:'#090a0c',useCORS:true,logging:false});
+  return canvas;
+}
+
+document.querySelector('#download').onclick=async()=>{
+  const btn=document.querySelector('#download');
+  btn.disabled=true;
+  await document.fonts.ready;
+
+  try{
+    if(state.mode==='top5' && state.carousel){
+      const originalSlide=state.slide;
+      const zip=new JSZip();
+      for(let s=0;s<6;s++){
+        btn.textContent=`Rendering slide ${s+1}/6…`;
+        state.slide=s; render();
+        await new Promise(r=>setTimeout(r,60)); // let layout settle
+        const canvas=await captureCurrentSlide();
+        const blob=await new Promise(res=>canvas.toBlob(res,'image/png',1));
+        const name = s===0 ? '00-cover.png' : String(s).padStart(2,'0')+'-rank-'+(6-s)+'.png';
+        zip.file(name, blob);
+      }
+      state.slide=originalSlide; render();
+      btn.textContent='Zipping…';
+      const zipBlob=await zip.generateAsync({type:'blob'});
+      const a=document.createElement('a');
+      a.download='afri-index-top5-carousel.zip';
+      a.href=URL.createObjectURL(zipBlob);
+      a.click();
+      showToast('Carousel ZIP ready — 6 slides.');
+    } else {
+      btn.textContent='Preparing PNG…';
+      const canvas=await captureCurrentSlide();
+      const a=document.createElement('a');
+      a.download=`afri-index-${state.mode}-${state.aspect}.png`;
+      a.href=canvas.toDataURL('image/png',1);
+      a.click();
+      showToast('Your high-resolution PNG is ready.');
+    }
+  }catch(e){
+    showToast('Export failed. Remove the image and try again.');
+  }finally{
+    btn.disabled=false;
+    render();
+  }
+};
+
+fieldHtml();
 render();
 </script>
 </body>
