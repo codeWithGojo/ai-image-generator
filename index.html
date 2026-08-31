@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Afri Index Flier Studio</title>
-<meta name="description" content="Create polished Afrobeats chart, artist comparison, tour and Top 5 countdown graphics.">
+<meta name="description" content="Create polished Afrobeats chart, artist comparison, tour, Top 5 countdown, and upcoming drops graphics.">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
@@ -32,8 +32,8 @@ button,input,select{font:inherit}
 .section-head{margin-bottom:14px}
 .section-head span{font:700 10px 'Space Mono',monospace;letter-spacing:.1em;text-transform:uppercase}
 .section-head small{color:#676d77;font:9px 'Space Mono',monospace;text-transform:uppercase}
-.tabs{display:grid;grid-template-columns:repeat(2,1fr);gap:4px;background:#0c0e10;border:1px solid #262a30;border-radius:10px;padding:4px}
-.tab{height:40px;border:0;border-radius:7px;background:transparent;color:#7f858f;text-transform:uppercase;font:700 10px 'Space Mono',monospace;cursor:pointer}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:#0c0e10;border:1px solid #262a30;border-radius:10px;padding:4px}
+.tab{height:40px;border:0;border-radius:7px;background:transparent;color:#7f858f;text-transform:uppercase;font:700 9.5px 'Space Mono',monospace;cursor:pointer}
 .tab.active{color:#090a0c;background:var(--lime)}
 .formats,.two,.style{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .format{height:42px;border:1px solid #30343a;border-radius:8px;background:var(--field);color:#9499a2;font-size:11px;cursor:pointer}
@@ -102,6 +102,7 @@ button,input,select{font:inherit}
 .date b{color:var(--accent);font:8px 'Space Mono',monospace}
 .date span{font:clamp(17px,2.6vw,25px) 'Archivo Black',sans-serif;text-transform:uppercase}
 .date strong{font:9px 'Space Mono',monospace}
+.date small.sub-artist{display:block;margin-top:3px;color:#8a8f97;font:9px 'Space Mono',monospace;text-transform:none;letter-spacing:0}
 .card-footer{gap:20px;border-top:1px solid rgba(255,255,255,.18);padding-top:14px;color:#9fa2a7;font:7px 'Space Mono',monospace;text-transform:uppercase}
 .card-footer b{color:var(--accent);text-align:right}
 .card.square .content{padding:6%}
@@ -138,6 +139,9 @@ button,input,select{font:inherit}
 .slide-btn:disabled{opacity:.35;cursor:default}
 .slide-count{font:10px 'Space Mono',monospace;color:#8a8f97;letter-spacing:.08em;text-transform:uppercase}
 
+/* --- drops (release radar) badge on date rows --- */
+.drop-tag{display:inline-block;margin-left:8px;padding:2px 7px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font:7px 'Space Mono',monospace;letter-spacing:.08em;vertical-align:middle}
+
 @media(max-width:980px){.app{grid-template-columns:1fr}.panel{height:auto;overflow:visible;border-right:0;border-bottom:1px solid var(--line);padding:22px 22px 118px}.intro{padding-top:35px}.intro h1{max-width:600px}.dock{width:100%;padding:12px 22px 14px}.stage{min-height:760px;padding:25px 20px 34px}.card{width:min(420px,100%)}}
 @media(max-width:520px){.panel{padding-inline:16px}.status{display:none}.intro{padding:30px 0 25px}.intro h1{font-size:30px}.style,.two{grid-template-columns:1fr}.dock{padding-inline:16px}.stage{min-height:680px;padding-inline:13px}.card.vertical{width:min(360px,100%)}}
 </style>
@@ -146,7 +150,7 @@ button,input,select{font:inherit}
 <main class="app">
   <aside class="panel">
     <header class="top"><div class="brand"><span class="mark">A/</span><span class="brand-name">AFRI <b>INDEX</b></span></div><span class="status"><i></i> Live preview</span></header>
-    <div class="intro"><p class="kicker">SOCIAL CREATIVE STUDIO</p><h1>Make the numbers look as big as they feel.</h1><p>Build clean Afrobeats chart cards, countdowns and carousels—ready for Reels, TikTok and the feed.</p></div>
+    <div class="intro"><p class="kicker">SOCIAL CREATIVE STUDIO</p><h1>Make the numbers look as big as they feel.</h1><p>Build clean Afrobeats chart cards, countdowns, drops and carousels—ready for Reels, TikTok and the feed.</p></div>
 
     <section class="section">
       <div class="section-head"><span>01 · Post type</span><small>Choose a layout</small></div>
@@ -155,6 +159,7 @@ button,input,select{font:inherit}
         <button class="tab" data-mode="vs">VS</button>
         <button class="tab" data-mode="tour">Touring</button>
         <button class="tab" data-mode="top5">Top 5</button>
+        <button class="tab" data-mode="drops">Drops</button>
       </div>
     </section>
 
@@ -230,7 +235,12 @@ const state={
       item2:{name:'Omah Lay — Cheat',stat:'184M streams'},
       item3:{name:'CKay — Emiliana',stat:'151M streams'},
       item4:{name:'Ayra Starr — Rush',stat:'139M streams'},
-      item5:{name:'Asake — Lonely At The Top',stat:'118M streams'}}
+      item5:{name:'Asake — Lonely At The Top',stat:'118M streams'}},
+    drops:{eyebrow:'UPCOMING DROPS',headline:"What's Landing Soon",subline:'Mark your calendar for these',footer:'Full release calendar at afriindex.com',
+      artist1:'Wizkid',title1:'Morayo II',date1:'Sep 12',type1:'ALBUM',
+      artist2:'Tems',title2:'Free Fall',date2:'Sep 19',type2:'SINGLE',
+      artist3:'Asake',title3:'Lungu Boy 2',date3:'Oct 03',type3:'ALBUM',
+      artist4:'Ayra Starr',title4:'Bad Birdie',date4:'Oct 10',type4:'SINGLE'}
   }
 };
 
@@ -252,34 +262,74 @@ function metric(v){return parseFloat(String(v).replace(/,/g,''))||0}
 /* ---------- FIELD PANEL ---------- */
 function fieldHtml(){
   const box=document.querySelector('#fields');
-  if(state.mode!=='top5'){
-    box.innerHTML=schemas[state.mode].map(([key,label])=>
-      `<label class="label"><span>${label}</span><input data-key="${key}" maxlength="80" value="${esc(state.data[state.mode][key])}"></label>`
-    ).join('');
-    box.querySelectorAll('input').forEach(i=>i.addEventListener('input',e=>{
-      state.data[state.mode][e.target.dataset.key]=e.target.value; render();
+
+  if(state.mode==='top5'){
+    const d=state.data.top5;
+    let html=`
+      <label class="label"><span>Eyebrow tag</span><input data-key="eyebrow" maxlength="80" value="${esc(d.eyebrow)}"></label>
+      <label class="label"><span>Headline</span><input data-key="headline" maxlength="80" value="${esc(d.headline)}"></label>`;
+    for(let n=1;n<=5;n++){
+      html+=`
+      <div class="item-group"><span class="rank-badge">RANK ${n}</span>
+        <label class="label"><span>Name</span><input data-item="${n}" data-field="name" maxlength="60" value="${esc(d['item'+n].name)}"></label>
+        <label class="label"><span>Stat</span><input data-item="${n}" data-field="stat" maxlength="40" value="${esc(d['item'+n].stat)}"></label>
+      </div>`;
+    }
+    html+=`<label class="label"><span>Footer note</span><input data-key="footer" maxlength="80" value="${esc(d.footer)}"></label>`;
+    box.innerHTML=html;
+    box.querySelectorAll('input[data-key]').forEach(i=>i.addEventListener('input',e=>{
+      state.data.top5[e.target.dataset.key]=e.target.value; render();
+    }));
+    box.querySelectorAll('input[data-item]').forEach(i=>i.addEventListener('input',e=>{
+      state.data.top5['item'+e.target.dataset.item][e.target.dataset.field]=e.target.value; render();
     }));
     return;
   }
-  // top5 fields: eyebrow, headline, footer, then 5 item groups
-  const d=state.data.top5;
-  let html=`
-    <label class="label"><span>Eyebrow tag</span><input data-key="eyebrow" maxlength="80" value="${esc(d.eyebrow)}"></label>
-    <label class="label"><span>Headline</span><input data-key="headline" maxlength="80" value="${esc(d.headline)}"></label>`;
-  for(let n=1;n<=5;n++){
-    html+=`
-    <div class="item-group"><span class="rank-badge">RANK ${n}</span>
-      <label class="label"><span>Name</span><input data-item="${n}" data-field="name" maxlength="60" value="${esc(d['item'+n].name)}"></label>
-      <label class="label"><span>Stat</span><input data-item="${n}" data-field="stat" maxlength="40" value="${esc(d['item'+n].stat)}"></label>
-    </div>`;
+
+  if(state.mode==='drops'){
+    const d=state.data.drops;
+    let html=`
+      <label class="label"><span>Eyebrow tag</span><input data-key="eyebrow" maxlength="80" value="${esc(d.eyebrow)}"></label>
+      <label class="label"><span>Headline</span><input data-key="headline" maxlength="80" value="${esc(d.headline)}"></label>
+      <label class="label"><span>Sub line</span><input data-key="subline" maxlength="80" value="${esc(d.subline)}"></label>`;
+    for(let n=1;n<=4;n++){
+      html+=`
+      <div class="item-group"><span class="rank-badge">DROP ${n}</span>
+        <label class="label"><span>Artist</span><input data-drop="${n}" data-field="artist" maxlength="40" value="${esc(d['artist'+n])}"></label>
+        <label class="label"><span>Title</span><input data-drop="${n}" data-field="title" maxlength="50" value="${esc(d['title'+n])}"></label>
+        <div class="two">
+          <label class="label"><span>Date</span><input data-drop="${n}" data-field="date" maxlength="20" value="${esc(d['date'+n])}"></label>
+          <label class="label"><span>Type</span>
+            <select data-drop="${n}" data-field="type">
+              <option value="SINGLE" ${d['type'+n]==='SINGLE'?'selected':''}>Single</option>
+              <option value="EP" ${d['type'+n]==='EP'?'selected':''}>EP</option>
+              <option value="ALBUM" ${d['type'+n]==='ALBUM'?'selected':''}>Album</option>
+              <option value="VIDEO" ${d['type'+n]==='VIDEO'?'selected':''}>Video</option>
+            </select>
+          </label>
+        </div>
+      </div>`;
+    }
+    html+=`<label class="label"><span>Footer note</span><input data-key="footer" maxlength="80" value="${esc(d.footer)}"></label>`;
+    box.innerHTML=html;
+    box.querySelectorAll('input[data-key]').forEach(i=>i.addEventListener('input',e=>{
+      state.data.drops[e.target.dataset.key]=e.target.value; render();
+    }));
+    box.querySelectorAll('[data-drop]').forEach(i=>i.addEventListener('input',e=>{
+      state.data.drops[e.target.dataset.field+e.target.dataset.drop]=e.target.value; render();
+    }));
+    box.querySelectorAll('select[data-drop]').forEach(i=>i.addEventListener('change',e=>{
+      state.data.drops[e.target.dataset.field+e.target.dataset.drop]=e.target.value; render();
+    }));
+    return;
   }
-  html+=`<label class="label"><span>Footer note</span><input data-key="footer" maxlength="80" value="${esc(d.footer)}"></label>`;
-  box.innerHTML=html;
-  box.querySelectorAll('input[data-key]').forEach(i=>i.addEventListener('input',e=>{
-    state.data.top5[e.target.dataset.key]=e.target.value; render();
-  }));
-  box.querySelectorAll('input[data-item]').forEach(i=>i.addEventListener('input',e=>{
-    state.data.top5['item'+e.target.dataset.item][e.target.dataset.field]=e.target.value; render();
+
+  // chart / vs / tour (simple key-value schema)
+  box.innerHTML=schemas[state.mode].map(([key,label])=>
+    `<label class="label"><span>${label}</span><input data-key="${key}" maxlength="80" value="${esc(state.data[state.mode][key])}"></label>`
+  ).join('');
+  box.querySelectorAll('input').forEach(i=>i.addEventListener('input',e=>{
+    state.data[state.mode][e.target.dataset.key]=e.target.value; render();
   }));
 }
 
@@ -325,13 +375,17 @@ function render(){
       edition='TOP 5 · 1/6';
       body=`<div class="cover-wrap"><p class="eyebrow">${esc(d.eyebrow)}</p><h2>${esc(d.headline)}</h2><p class="subline">Swipe through the full countdown</p><div class="swipe">SWIPE FOR #5 →</div></div>`;
     } else {
-      // slide 1..5 -> countdown order rank5,4,3,2,1
       const rank = total - state.slide; // slide1->rank5 ... slide5->rank1
       const item = d['item'+rank];
       edition = 'TOP 5 · '+(state.slide+1)+'/6';
       const isLast = state.slide===total-1;
       body=`<div class="item-slide"><p class="eyebrow">RANK</p><div class="rank-huge">${rank<10?'0'+rank:rank}</div><div class="rank-name-big">${esc(item.name)}</div><p class="rank-stat-big">${esc(item.stat)}</p><div class="swipe">${isLast?'FULL LIST AT AFRIINDEX.COM':'NEXT →'}</div></div>`;
     }
+  }
+
+  if(state.mode==='drops'){
+    edition='RELEASE RADAR';
+    body=`<div class="body"><p class="eyebrow">${esc(d.eyebrow)}</p><h2>${esc(d.headline)}</h2><p class="subline">${esc(d.subline)}</p><div class="dates">${[1,2,3,4].map(n=>`<div class="date"><b>0${n}</b><span>${esc(d['artist'+n])} — ${esc(d['title'+n])}<span class="drop-tag">${esc(d['type'+n])}</span></span><strong>${esc(d['date'+n])}</strong></div>`).join('')}</div></div>`;
   }
 
   document.querySelector('#content').innerHTML=`<div class="top">${brand}<span class="edition">${edition}</span></div>${body}<footer class="card-footer"><span>${esc(d.footer)}</span><b>AFRICA’S MUSIC, MEASURED.</b></footer>`;
@@ -406,7 +460,7 @@ document.querySelector('#download').onclick=async()=>{
       for(let s=0;s<6;s++){
         btn.textContent=`Rendering slide ${s+1}/6…`;
         state.slide=s; render();
-        await new Promise(r=>setTimeout(r,60)); // let layout settle
+        await new Promise(r=>setTimeout(r,60));
         const canvas=await captureCurrentSlide();
         const blob=await new Promise(res=>canvas.toBlob(res,'image/png',1));
         const name = s===0 ? '00-cover.png' : String(s).padStart(2,'0')+'-rank-'+(6-s)+'.png';
